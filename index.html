@@ -1,0 +1,1088 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Starbound Space Station Planner</title>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script>
+
+    // jQuery tinyDraggable v1.0.2
+    // https://github.com/Pixabay/jQuery-tinyDraggable
+    !function(e){e.fn.tinyDraggable=function(n){var t=e.extend({handle:0,exclude:0},n);return this.each(function(){var n,o,u=e(this),a=t.handle?e(t.handle,u):u;a.on({mousedown:function(a){if(!t.exclude||!~e.inArray(a.target,e(t.exclude,u))){a.preventDefault();var f=u.offset();n=a.pageX-f.left,o=a.pageY-f.top,e(document).on("mousemove.drag",function(e){u.offset({top:e.pageY-o,left:e.pageX-n})})}},mouseup:function(){e(document).off("mousemove.drag")}})})}}(jQuery);
+    
+    SpaceStation = {
+      width: 50,
+      height: 13,
+      cellSize: 246 / 3,
+      parts: [
+        {
+          id: 'core',
+          coding: 'c',
+          name: 'Core',
+          description: 'A square room with expansion slots in 4 directions.',
+          exits: ['n','e','w','s'],
+          cost: {
+            titanium: 50,
+            gold: 70,
+            silver: 120,
+            wire: 200
+          }
+        },
+        {
+          id: 'lcore',
+          coding: 'C',
+          name: 'Large Core',
+          description: 'A huge empty room with expansion slots in 4 directions.',
+          grid: [
+            [0,0,'lcore1'],
+            [1,0,'lcore2','n'],
+            [2,0,'lcore3'],
+            [0,1,'lcore4','w'],
+            [1,1,'lcore5'],
+            [2,1,'lcore6','e'],
+            [0,2,'lcore7'],
+            [1,2,'lcore8','s'],
+            [2,2,'lcore9']
+          ],
+          cost: {
+            titanium: 450,
+            gold: 600,
+            silver: 160,
+            wire: 700
+          }
+        },
+        {
+          id: 'xjunction',
+          name: 'Cross Junction',
+          coding: 'x',
+          description: 'A cross-shaped room with expansion slots in 4 directions.',
+          exits: ['n','e','w','s'],
+          cost: {
+            titanium: 50,
+            gold: 70,
+            silver: 120,
+            glass: 40,
+            wire: 200
+          }
+        },
+        {
+          id: 'xcorner_nesw',
+          coding: 'S',
+          name: 'Cross Corner N-E & S-W',
+          description: 'A room made of two unconnected tunnels, with expansion slots in 4 directions.',
+          exits: ['n','e','w','s'],
+          cost: {
+            titanium: 50,
+            gold: 70,
+            silver: 120,
+            wire: 200
+          }
+        },
+        {
+          id: 'xcorner_nwse',
+          coding: 'Z',
+          name: 'Cross Corner N-W & S-E',
+          description: 'A room made of two unconnected tunnels, with expansion slots in 4 directions.',
+          exits: ['n','e','w','s'],
+          cost: {
+            titanium: 50,
+            gold: 70,
+            silver: 120,
+            wire: 200
+          }
+        },
+        {
+          id: 'corridor',
+          coding: 'h',
+          name: 'Horizontal Corridor',
+          description: 'A corridor with an expansion slot on both ends.',
+          exits: ['w','e'],
+          cost: {
+            titanium: 40,
+            gold: 50,
+            silver: 60,
+            wire: 100
+          }
+        },
+        {
+          id: 'lcorridor',
+          coding: 'H',
+          name: 'Long Horizontal Corridor',
+          description: 'A long horizontal glass corridor with a rail running through it. It has expansion slots on both ends.',
+          grid: [
+            [0,0,'lcorridor1',['w']],
+            [1,0,'lcorridor2'],
+            [2,0,'lcorridor3',['e']]
+          ],
+          cost: {
+            titanium: 120,
+            gold: 150,
+            silver: 60,
+            glass: 120,
+            wire: 100
+          }
+        },
+        {
+          id: 'shaft',
+          coding: 'v',
+          name: 'Vertical Shaft',
+          description: 'A vertical shaft with an expansion slot on both ends.',
+          exits: ['n','s'],
+          cost: {
+            titanium: 40,
+            gold: 50,
+            silver: 60,
+            wire: 100
+          }
+        },
+        {
+          id: 'lshaft',
+          coding: 'V',
+          name: 'Long Vertical Shaft',
+          description: 'A long vertical glass shaft with a rail running through it. It has expansion slots on both ends.',
+          grid: [
+            [0,0,'lshaft1',['n']],
+            [0,1,'lshaft2'],
+            [0,2,'lshaft3',['s']]
+          ],
+          cost: {
+            titanium: 120,
+            gold: 150,
+            silver: 60,
+            glass: 120,
+            wire: 100
+          }
+        },
+        {
+          id: 'corner_ne',
+          coding: 'b',
+          name: 'Corner N-E',
+          description: 'A corner shaped passage, with north and east-facing expansion slots.',
+          exits: ['n','e'],
+          cost: {
+            titanium: 40,
+            gold: 50,
+            silver: 60,
+            glass: 40,
+            wire: 100
+          }
+        },
+        {
+          id: 'corner_nw',
+          coding: 'd',
+          name: 'Corner N-W',
+          description: 'A corner shaped passage, with west and north-facing expansion slots.',
+          exits: ['n','w'],
+          cost: {
+            titanium: 40,
+            gold: 50,
+            silver: 60,
+            glass: 40,
+            wire: 100
+          }
+        },
+        {
+          id: 'corner_sw',
+          coding: 'q',
+          name: 'Corner S-W',
+          description: 'A corner shaped passage, with west and south-facing expansion slots.',
+          exits: ['s','w'],
+          cost: {
+            titanium: 40,
+            gold: 50,
+            silver: 60,
+            glass: 40,
+            wire: 100
+          }
+        },
+        {
+          id: 'corner_se',
+          coding: 'p',
+          name: 'Corner S-E',
+          description: 'A corner shaped passage, with south and east-facing expansion slots.',
+          exits: ['s','e'],
+          cost: {
+            titanium: 40,
+            gold: 50,
+            silver: 60,
+            glass: 40,
+            wire: 100
+          }
+        },
+        {
+          id: 't_nwe',
+          coding: 's',
+          name: 'T Junction N-W-E',
+          description: 'A T junction shaped room with expansion slots in 3 directions.',
+          exits: ['n','w','e'],
+          cost: {
+            titanium: 50,
+            gold: 60,
+            silver: 90,
+            glass: 40,
+            wire: 150
+          }
+        },
+        {
+          id: 't_nse',
+          coding: 'w',
+          name: 'T Junction N-S-E',
+          description: 'A T junction shaped room with expansion slots in 3 directions.',
+          exits: ['n','s','e'],
+          cost: {
+            titanium: 50,
+            gold: 60,
+            silver: 90,
+            glass: 40,
+            wire: 150
+          }
+        },
+        {
+          id: 't_nsw',
+          coding: 'e',
+          name: 'T Junction N-S-W',
+          description: 'A T junction shaped room with expansion slots in 3 directions.',
+          exits: ['n','s','w'],
+          cost: {
+            titanium: 50,
+            gold: 60,
+            silver: 90,
+            glass: 40,
+            wire: 150
+          }
+        },
+        {
+          id: 't_swe',
+          coding: 'n',
+          name: 'T Junction S-W-E',
+          description: 'A T junction shaped room with expansion slots in 3 directions.',
+          exits: ['s','w','e'],
+          cost: {
+            titanium: 50,
+            gold: 60,
+            silver: 90,
+            glass: 40,
+            wire: 150
+          }
+        },
+        {
+          id: 'mech',
+          coding: 'm',
+          name: 'Mech Assembly Room',
+          description: 'A corridor with a mech assembly station and mech crafting station. It has expansion slots on both ends.',
+          exits: ['e','w'],
+          cost: {
+            titanium: 50,
+            gold: 70,
+            silver: 60,
+            wire: 100,
+            proton_limiter: 40
+          }
+        },
+        {
+          id: 'wbay',
+          coding: 'W',
+          name: 'Mech Bay West',
+          description: 'A west-facing station entrance, suitable for landing mechs.',
+          exits: ['e'],
+          cost: {
+            titanium: 50,
+            gold: 80,
+            silver: 40,
+            interface_chip: 20
+          }
+        },
+        {
+          id: 'ebay',
+          name: 'Mech Bay East',
+          coding: 'E',
+          description: 'An east-facing station entrance, suitable for landing mechs.',
+          exits: ['w'],
+          cost: {
+            titanium: 50,
+            gold: 80,
+            silver: 40,
+            interface_chip: 20
+          }
+        },
+        {
+          id: 'core1',
+          coding: '0',
+          name: 'Core',
+          description: 'This is the starting core of your space station.',
+          exits: ['n','e','w','s']
+        }
+      ],
+      
+      init: function(container) {
+        // create cells
+        var border = this.getCellBorderWidth() * 2;
+        for(var y=0; y < this.height; y++) {
+          for(var x=0; x < this.width; x++) {
+            var cell = $('<div class="cell">').attr('id', 'cell_' + x + '_' + y);
+            if (this.showCoords) cell.text(x + ',' + y);
+            cell.width(this.cellSize);
+            cell.height(this.cellSize);
+            cell.offset({top: y * (this.cellSize + border), left: x * (this.cellSize + border)});
+            cell.append($('<div class="overlay">'));
+            cell.click({x: x, y: y}, function(event) {
+              this.onClickCell(event.data.x, event.data.y);
+            }.bind(this));
+            container.append(cell);
+          }
+          container.width((this.cellSize * this.width) + (this.width * border) + border);
+          container.height((this.cellSize * this.height) + (this.height * border) + border);
+        }
+        this._bigParts = this.parts.filter(function(p){ return p.grid }).map(function(p){ return p.id });
+        
+        this.initToolWindow($('#tools'));
+        this.initInfoWindow($('#info'));
+        this.selectTool('info');
+        
+        // add initial items
+        this.items = [];
+        this.addItem('wbay', 5,5, true, true);
+        this.addItem('core1', 6,5, true, true);
+        this.loadStationHash(location.hash.slice(1));
+        this.updateHash();
+      },
+      
+      initToolWindow: function(toolsDiv) {
+        this.toolWindow = toolsDiv;
+        toolsDiv.width(32 * 3);
+        toolsDiv.height(28 * 8 + 19);
+        toolsDiv.offset({top: this.cellSize/2, left: this.cellSize/2});
+        toolsDiv.tinyDraggable({ exclude: '.tool' });
+        var tools = [
+          'info', 'craft', 'manipulator',
+          'core', 'shaft', 'lshaft',
+          'lcore', 'corridor', 'lcorridor',
+          'wbay', 'mech', 'ebay',
+          'corner_se', 't_swe', 'corner_sw',
+          't_nse', 'xjunction', 't_nsw',
+          'corner_ne', 't_nwe', 'corner_nw',
+          'xcorner_nwse', null, 'xcorner_nesw'
+        ];
+        var offset = {top: 18 - 28, left: 1};
+        for(var i=0; i < tools.length; i++) {
+          var tool = $('<div class="tool">');
+          var toolName = tools[i];
+          if (i % 3 == 0) {
+            offset.left = 1;
+            offset.top += 27;
+          }
+          if (i == 3) {
+            var separator = $('<hr>')
+            offset.top -= 2;
+            separator.offset(offset);
+            separator.width((32 * 3) - 4);
+            separator.height(0);
+            toolsDiv.append(separator);
+            offset.top += 10;
+          }
+          tool.offset(offset);
+          offset.left += 31;
+          if (toolName == null) continue;
+          tool.css('background-image', "url('assets/tool/"+ toolName + ".png')");
+          tool.attr('data-tool-name', toolName);
+          toolsDiv.append(tool);
+          tool.attr('title', this.getNameForTool(toolName));
+          tool.click(toolName, function(event) {
+            this.selectTool(event.data);
+          }.bind(this));
+        }
+        
+        this.toolWindow.dblclick(function() { 
+          var currentHeight = this.toolWindow.height();
+          var newHeight = (currentHeight == 16) ? 28 * 8 + 19 : 16;
+          this.toolWindow.animate({height: newHeight});
+        }.bind(this));
+      },
+      
+      selectTool: function(tool) {
+        $('.tool.selected').removeClass('selected');
+        $('.tool[data-tool-name="'+tool+'"]').addClass('selected');
+        this.selectedTool = tool;
+        this.removeCellColorOverlays();
+        
+        switch(tool) {  
+          case 'info':
+            this.showInfo('Click an object for more info.');
+            break;
+          case 'craft':
+            this.highlightBuiltItems();
+            break;
+          case 'manipulator':
+            this.showInfo('Click to delete an object.');
+            break;
+          default: 
+            this.showInfoForPart(tool);
+        }
+      },
+      
+      getNameForTool: function(tool) {
+        switch(tool) {
+          case 'info': return 'Info';
+          case 'craft': return 'Crafting';
+          case 'manipulator': return 'Delete';
+          default: return this.getPrototype(tool).name;
+        }
+      },
+      
+      getCellBorderWidth: function() {
+        for (var i=0; i < document.styleSheets.length; i++) {
+          var styleSheet = document.styleSheets[i];
+          for (var j=0; j < styleSheet.cssRules.length; j++) {
+            var rule = styleSheet.cssRules[j];
+            if (rule.selectorText == '.cell') {
+              return parseInt(rule.style.borderWidth);
+            }
+          }
+        }
+        return 3;
+      },
+      
+      constrainX: function(x) {
+        if (x >= 0 && x < this.width) return x;
+        while (x < 0) x += this.width;
+        while (x >= this.width) x -= this.width;
+        return x;
+      },
+      
+      isBigPart: function(part) {
+        return this._bigParts.indexOf(part) != -1;
+      },
+      
+      addItem: function(part, x, y, built, locked) {
+        if (this.canPlaceItemAt(part,x,y)) {
+          x = this.constrainX(x);
+          var item = {part: part, x: x, y: y, built: !!built, locked: !!locked};
+          this.items.push(item);
+          this.drawItem(item);
+          this.highlightMismatches();
+          return true;
+        } else {
+          return false;
+        }
+      },
+      
+      forEachOccupiedCell: function(callback) {
+        // callback(item, x, y, exits)
+        for (var i = this.items.length - 1; i >= 0; i--) {
+          var item = this.items[i];
+          var prototype = this.getPrototype(item.part);
+          if (this.isBigPart(item.part)) {
+            // item is big, loop through grid
+            var grid = prototype.grid;
+            for (var j = grid.length - 1; j >= 0; j--) {
+              var cell = grid[j];
+              var cellExits = cell.length >= 4 ? cell[3] : [];
+              callback(item, item.x + cell[0], item.y + cell[1], cellExits);
+            }
+          } else {
+            callback(item, item.x, item.y, prototype.exits);
+          }
+        }
+      },
+      
+      removeItemAtIndex: function(index) {
+        if (index < 0 || index >= this.items.length) return false;
+        var item = this.items[index];
+        this.items.splice(index,1);
+        this.unDrawItem(item);
+        this.highlightMismatches();
+        return true;
+      },
+      
+      removeItem: function(item) {
+        if (item == null) return false;
+        var cx = this.constrainX(item.x);
+        var index = this.items.findIndex(function(i) {
+          return i.part == item.part && i.x == cx && i.y == item.y;
+        });
+        return this.removeItemAtIndex(index);
+      },
+      
+      removeItemAtCell: function(x,y) {
+        var item = this.getItemAtCell(x,y);
+        return this.removeItem(item);
+      },
+      
+      removeAllItems: function(evenTheLockedOnes) {
+        for (var i = 0; i < this.items.length; i++) {
+          var item = this.items[i];
+          if (item.locked && !evenTheLockedOnes) continue;
+          this.unDrawItem(item);
+        }
+        this.items = this.items.filter(function(item) {
+          return item.locked && !evenTheLockedOnes;
+        })
+        
+        this.highlightMismatches();
+        this.removeCellColorOverlays();
+        if (this.selectedTool == 'craft') {
+          this.highlightBuiltItems();
+        }
+      },
+      
+      drawItem: function(item, opt) {
+        var prototype = this.getPrototype(item.part);
+        var removing = (opt == 'remove');
+        if (prototype.grid) {
+          for (var i = prototype.grid.length - 1; i >= 0; i--) {
+            var g = prototype.grid[i];
+            this.setCellImage(item.x + g[0], item.y + g[1], removing ? null : g[2]);
+          }
+        } else {
+          this.setCellImage(item.x, item.y, removing ? null : item.part);
+        }
+      },
+      
+      unDrawItem: function(item) {
+        this.drawItem(item, 'remove');
+      },
+      
+      canPlaceItemAt: function(part, x, y) {
+        x = this.constrainX(x);
+        var prototype = this.getPrototype(part);
+        if (prototype.grid) {
+          for (var i = prototype.grid.length - 1; i >= 0; i--) {
+            var g = prototype.grid[i];
+            if (!this.positionIsValid(x + g[0],y + g[1])) return false;
+            if (this.getItemAtCell(x + g[0],y + g[1]) != null) return false;
+          }
+          return true;
+        } else {
+          return this.positionIsValid(x,y) && (this.getItemAtCell(x,y) == null);
+        }
+      },
+      
+      cellsForPlacingItemAt: function(part, x, y) {
+        x = this.constrainX(x);
+        var prototype = this.getPrototype(part);
+        if (prototype.grid) {
+          var cells = []
+          for (var i = prototype.grid.length - 1; i >= 0; i--) {
+            var g = prototype.grid[i];
+            if (this.positionIsValid(x + g[0],y + g[1])) {
+              cells.push([this.constrainX(x + g[0]), y + g[1]])
+            } else {
+              return [];
+            }
+          }
+          return cells;
+        } else {
+          return [[this.constrainX(x), y]];
+        }
+      },
+      
+      positionIsValid: function(x, y) {
+        return (y >= 0 && y < this.height);
+      },
+      
+      getItemAtCell: function(x, y) {
+        x = this.constrainX(x);
+        for (var i = this.items.length - 1; i >= 0; i--) {
+          var item = this.items[i];
+          if (item.x == x && item.y == y) {
+            // item is on this tile
+            return item;
+          } else if (this.isBigPart(item.part)) {
+            // item is big, check its grid
+            var grid = this.getPrototype(item.part).grid;
+            for (var j = grid.length - 1; j >= 0; j--) {
+              var cell = grid[j];
+              if (item.x + cell[0] == x && item.y + cell[1] == y)
+                return item;
+            }
+          }
+        }
+        return null;
+      },
+      
+      cellIsEmpty: function(x, y) {
+        return (this.getItemAtCell(x,y) == null);
+      },
+      
+      getExitsAtCell: function(x, y) {
+        x = this.constrainX(x);
+        for (var i = this.items.length - 1; i >= 0; i--) {
+          var item = this.items[i];
+          var prototype = this.getPrototype(item.part);
+          if (this.isBigPart(item.part)) {
+            // item is big, check its grid
+            var grid = prototype.grid;
+            for (var j = grid.length - 1; j >= 0; j--) {
+              var cell = grid[j];
+              if (item.x + cell[0] == x && item.y + cell[1] == y) {
+                return cell.length >= 4 ? cell[3] : [];
+              }
+            }
+          } else if (item.x == x && item.y == y) {
+            return prototype.exits;
+          }
+        }
+        return null;
+      },
+      
+      getCell: function(x,y) {
+        x = this.constrainX(x);
+        if (y < 0 || y >= this.height) return null;
+        return $('#cell_' + x + '_' + y);
+      },
+      
+      getPrototype: function(id) {
+        for (var i = this.parts.length - 1; i >= 0; i--) {
+          var part = this.parts[i];
+          if (part.id == id) return part;
+        }
+        return null;
+      },
+      
+      setCellImage: function(x,y,type) {
+        var cell = this.getCell(x,y);
+        cell.css('background-image', type ? ('url(assets/part/' + type + '.png)') : '');
+      },
+      
+      removeCellColorOverlays: function() {
+        $('.cell > .overlay').css('background-color', '');
+      },
+      
+      setCellColorOverlay: function(x,y,color) {
+        if (color == null) color = '';
+        this.getCell(x,y).children('.overlay').css('background-color', color);
+      },
+      
+      setItemColorOverlay: function(item, color) {
+        var prototype = this.getPrototype(item.part);
+        if (prototype.grid) {
+          for (var i = prototype.grid.length - 1; i >= 0; i--) {
+            var g = prototype.grid[i];
+            this.setCellColorOverlay(item.x + g[0], item.y + g[1], color);
+          }
+        } else {
+          this.setCellColorOverlay(item.x, item.y, color);
+        }
+      },
+      
+      highlightMismatches: function() {
+        var hasMismatches = false;
+        this.forEachOccupiedCell(function(item,x,y,exits) {
+          var directions = ['n','s','w','e'];
+          for (var i = directions.length - 1; i >= 0; i--) {
+            var direction = directions[i];
+            var neighbour = this.getNeighbour(x,y,direction);
+            if (neighbour == null) return;
+            var cellExits = this.getExitsAtCell(neighbour[0], neighbour[1]);
+            var opposite = this.getOppositeDirection(direction);
+            var mismatch = (cellExits != null && 
+              ((exits.indexOf(direction) != -1 && cellExits.indexOf(opposite) == -1) ||
+              (exits.indexOf(direction) == -1 && cellExits.indexOf(opposite) != -1)));
+            hasMismatches = (hasMismatches || mismatch);
+            var borderColor = mismatch ? 'red' : ''
+            this.getCell(x,y).css('border-'+this.cssForDirection(direction)+'-color', borderColor);
+            this.getCell(neighbour[0],neighbour[1]).css('border-'+this.cssForDirection(opposite)+'-color', borderColor);
+          };
+        }.bind(this));
+        return hasMismatches;
+      },
+      
+      getNeighbour: function(x,y,direction) {
+        switch(direction) {
+          case 'n': y -= 1; break;
+          case 's': y += 1; break;
+          case 'e': x += 1; break;
+          case 'w': x -= 1; break;
+        }
+        if (y < 0 || y >= this.height) return null;
+        return [this.constrainX(x), y];
+      },
+      
+      getOppositeDirection: function(direction) {
+        switch(direction) {
+          case 'n': return 's';
+          case 's': return 'n';
+          case 'e': return 'w';
+          case 'w': return 'e';
+          default: return null;
+        }
+      },
+      
+      cssForDirection: function(direction) {
+        switch(direction) {
+          case 'n': return 'top';
+          case 's': return 'bottom';
+          case 'e': return 'right';
+          case 'w': return 'left';
+          default: return null;
+        }
+      },
+      
+      buildToolSelected: function() {
+        switch(this.selectedTool) {
+        case 'info':
+        case 'craft':
+        case 'manipulator':
+          return false;
+        default:
+          return true;
+        } 
+      },
+      
+      onClickCell: function(x, y) {
+        switch(this.selectedTool) {
+        case 'info':
+          // show info for cell
+          var item = this.getItemAtCell(x, y);
+          if (item == null) return;
+          this.showInfoForPart(item.part);
+          break;
+        case 'craft':
+          // toggle built status of clicked item
+          var item = this.getItemAtCell(x, y);
+          if (item == null) return;
+          item.built = !item.built;
+          this.highlightBuiltItems();
+          this.updateHash();
+          break;
+        case 'manipulator':
+          this.removeCellColorOverlays();
+          var item = this.getItemAtCell(x, y);
+          if (item && !item.locked) {
+            this.removeItemAtCell(x, y);
+            this.updateHash();
+          } else {
+            this.setItemColorOverlay(item, 'red');
+            this.showInfo('Unfortunately, this object can\'t be removed.');
+          }
+          break;
+        default: // place item
+          var part = this.selectedTool;
+          if (this.addItem(part, x, y)) {
+            this.removeCellColorOverlays();
+            this.updateHash();
+          } else {
+            // highlight failure
+            var triedCells = this.cellsForPlacingItemAt(part, x, y);
+            this.removeCellColorOverlays();
+            for (var i = 0; i < triedCells.length; i++) {
+              var coord = triedCells[i];
+              this.setCellColorOverlay(coord[0], coord[1], 'red');
+            }
+          }
+        }
+      },
+      
+      highlightBuiltItems: function() {
+        this.removeCellColorOverlays();
+        // highlight built items
+        var builtItems = this.items.filter(function(i) { return i.built });
+        for (var i = 0; i < builtItems.length; i++) {
+          this.setItemColorOverlay(builtItems[i], 'orange');
+        }
+        
+        // total cost
+        var html = '<b>Total Cost: </b>' + this.getCostHTML(this.calculateTotalCost());
+        html += "<br/>Click to highlight an object and exclude it from the cost calculation.";
+        this.showInfo(html);
+      },
+      
+      calculateTotalCost: function() {
+        var totalCost = {};
+        for (var i = 0; i < this.items.length; i++) {
+          var item = this.items[i];
+          if (item.built) continue;
+          var itemCost = this.getPrototype(item.part).cost;
+          if (itemCost == null) continue;
+          for(var key in itemCost) {
+            if (!itemCost.hasOwnProperty(key)) continue;
+            if (totalCost[key] == null) {
+              totalCost[key] = itemCost[key];
+            } else {
+              totalCost[key] += itemCost[key];
+            }
+          }
+        }
+        return totalCost;
+      },
+      
+      initInfoWindow: function(infoDiv) {
+        this.infoWindow = infoDiv;
+        var offset = this.toolWindow.offset();
+        offset.left += this.toolWindow.width() + 8;
+        infoDiv.offset(offset);
+        infoDiv.tinyDraggable({ exclude: '.content' });
+        var closeBox = $('<div>').addClass('closebox').click(function() { this.infoWindow.hide() }.bind(this));
+        infoDiv.append(closeBox);
+      },
+      
+      showInfo: function(html) {
+        if (this.infoWindow) {
+          this.infoWindow.show();
+          this.infoWindow.children('.content').html(html);
+        }
+      },
+      
+      showInfoForPart: function(part) {
+        var prototype = this.getPrototype(part);
+        var html = '<b>' + prototype.name + '</b><br/>';
+        html += prototype.description + '<br/>';
+        if (prototype.cost) {
+          html += '<b>Cost:</b>' + this.getCostHTML(prototype.cost);
+        }
+        this.showInfo(html); 
+      },
+      
+      getCostHTML: function(cost) {
+        var hasAnyCost = false;
+        var list = $('<ul>').addClass('cost');
+        var costNames = {
+          titanium: 'Titanium Bar',
+          gold: 'Gold Bar',
+          silver: 'Silver Bar',
+          glass: 'Glass',
+          wire: 'Copper Wire',
+          proton_limiter: 'Salvaged Proton Limiter',
+          interface_chip: 'Salvaged Interface Chip'
+        }
+        for(var key in costNames) {
+          if (!costNames.hasOwnProperty(key)) continue;
+          if (cost.hasOwnProperty(key)) {
+            hasAnyCost = true;
+            list.append($('<li>').addClass(key).html('<b>' + cost[key] + '</b> ' + costNames[key]));
+          }
+        }
+        
+        if (hasAnyCost) {
+          return list.prop('outerHTML');
+        } else {
+          return '<i>n/a</i>';
+        }
+      },
+      
+      saveFormatCoding: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+      getStationHash: function() {
+        var items = [];
+        var coding = this.saveFormatCoding;
+        for (var i = 0; i < this.items.length; i++) {
+          var item = this.items[i];
+          var prototype = this.getPrototype(item.part);
+          var itemHash = coding[item.x] + coding[item.y + (item.built ? 16 : 0) + (item.locked ? 32 : 0)] + prototype.coding;
+          items.push(itemHash)
+        }
+        return items.sort().join('');
+      },
+      
+      loadStationHash: function(hash) {
+        if (/^([0-9A-Za-n][0-9A-Za-r][0CEHSVWZbcdehmnpqsvwx])+$/g.test(hash) == false) {
+          console.log("Invalid format (overall)");
+          return;
+        }
+        var items = hash.match(/(...)/g);
+        if (items.sort().join('') != hash) {
+          console.log("Invalid format (order)");
+          return;
+        }
+        var coding = this.saveFormatCoding;
+        var partCoding = {};
+        for (var i = 0; i < this.parts.length; i++) {
+          var part = this.parts[i];
+          partCoding[part.coding] = part.id;
+        }
+        this.removeAllItems(true);
+        for (var i = 0; i < items.length; i++) {
+          var itemDesc = items[i];
+          var x = coding.indexOf(itemDesc[0]);
+          var y = coding.indexOf(itemDesc[1]);
+          var part = partCoding[itemDesc[2]];
+          this.addItem(part, x, y & 15, y & 16, y & 32);
+        }
+      },
+      
+      updateHash: function() {
+        document.location.hash = this.getStationHash();
+      }
+    }
+    
+    $(document).ready(function() {
+      SpaceStation.init($('#grid'));
+      
+      // detect hash changes
+      $(window).on('hashchange', function() {
+        var newHash = location.hash.slice(1);
+        if (newHash != SpaceStation.getStationHash()) {
+          SpaceStation.loadStationHash(newHash);
+          if (SpaceStation.selectedTool == 'craft') {
+            SpaceStation.highlightBuiltItems();
+          }
+        }
+      })
+      
+      // keys
+      $(document).on('keypress', function(e) {
+        var keyToTool = {
+          '1': 'info', '2': 'craft', '3': 'manipulator',
+          'q': 'core', 'w': 'shaft', 'e': 'lshaft',
+          'a': 'lcore', 's': 'corridor', 'd': 'lcorridor',
+          'z': 'wbay', 'x': 'mech', 'c': 'ebay',
+          'u': 'corner_se', 'i': 't_swe', 'o': 'corner_sw',
+          'j': 't_nse', 'k': 'xjunction', 'l': 't_nsw',
+          'm': 'corner_ne', ',': 't_nwe', '.': 'corner_nw',
+          'v': 'xcorner_nwse', 'n': 'xcorner_nesw'
+        }
+        var key = String.fromCharCode(e.which);
+        if (keyToTool.hasOwnProperty(key)) {
+          SpaceStation.selectTool(keyToTool[key]);
+        }
+      })
+    });
+    
+  </script>
+  <style type="text/css">
+    html {
+      background: black url(assets/bg.png) fixed;
+    }
+    
+    #grid {
+      margin: 20px;
+      position: relative;
+    }
+    
+    .cell {
+      box-sizing: content-box;
+      position: absolute;
+      overflow: hidden;
+      border: 3px solid #999;
+      padding: 0px;
+      margin: 0px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-origin: border-box;
+      background-clip: border-box;
+      color: orange;
+      text-align: center;
+      font-family: monospace;
+      vertical-align: middle;
+    }
+    
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.5;
+    }
+    
+    #tools > hr {
+      border-top: 1px dotted black;
+      position: absolute;
+    }
+    
+    .window {
+      position: absolute;
+      background-color: #ddd;
+      border: solid 1px gray;
+      font-family: monospace;
+      font-size: 12px;
+      text-align: center;
+      vertical-align: top;
+      border-collapse: collapse;
+      overflow: hidden;
+    }
+    
+    #info {
+      min-width: 120px;
+      min-height: 80px;
+      max-width: 240px;
+      width: auto;
+      height: auto;
+      display: table;
+    }
+    
+    #info > div.content {
+      width: contain;
+      top: 28px;
+      text-align: left;
+      margin: 0 4px;
+      border-top: 1px dotted black;
+      padding: 0.5em;
+    }
+    
+    .window > .closebox {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 9px;
+      height: 9px;
+      background-color: white;
+      border: 1px solid black;
+      box-sizing: border-box;
+    }
+    
+    .tool {
+      display: table-cell;
+      border: 1px solid black;
+      box-sizing: border-box;
+      position: absolute;
+      width: 32px;
+      height: 28px;
+      background-size: 24px 24px;
+      background-repeat: no-repeat;
+      background-origin: border-box;
+      background-clip: border-box;
+      background-position: center;
+    }
+    
+    .tool.selected {
+      background-color: #2c66fb;
+    }
+    
+    ul.cost {
+      list-style: none;
+      margin: 0px;
+      padding-left: 1em;
+    }
+    
+    ul.cost > li:before {
+      content: '';
+      display: inline-block;
+      height: 12px;
+      width: 12px;
+      background-size: 12px 12px;
+      background-repeat: no-repeat;
+      padding-left: 0.5em;
+    }
+    
+    ul.cost > li.titanium:before { background-image: url('assets/icon/titanium.png'); }
+    ul.cost > li.gold:before { background-image: url('assets/icon/gold.png'); }
+    ul.cost > li.silver:before { background-image: url('assets/icon/silver.png'); }
+    ul.cost > li.wire:before { background-image: url('assets/icon/wire.png'); }
+    ul.cost > li.glass:before { background-image: url('assets/icon/glass.png'); }
+    ul.cost > li.proton_limiter:before { background-image: url('assets/icon/proton_limiter.png'); }
+    ul.cost > li.interface_chip:before { background-image: url('assets/icon/interface_chip.png'); }
+    
+    #footnote {
+      color: #ddd;
+      font: small sans-serif;
+      text-align: center;
+      width: 100%;
+    }
+    
+    a:link{color:inherit}
+    a:active{color:inherit}
+    a:visited{color:inherit}
+    a:hover{color:inherit}
+    
+  </style>
+</head>
+<body>
+  <div id="grid"></div>
+  <div id="tools" class="window"><b>tools</b></div>
+  <div id="info" class="window"><b>info</b><div class="content"><i>Loading...</i></div></div>
+  <div id="footnote">
+    Space Station planner for <a href="http://playstarbound.com">Starbound</a> by <a href="https://twitter.com/maczydeco">Jesús A. Álvarez</a>.<br/>
+    Starbound is © 2012-2017 <a href="http://www.chucklefish.org/">Chucklefish Ltd</a>.
+  </div>
+</body>
+</html>
