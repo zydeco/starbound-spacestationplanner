@@ -413,6 +413,14 @@
         }
         this._bigParts = this.parts.filter(function(p){ return p.grid }).map(function(p){ return p.id });
         
+        // options
+        if (location.hash.slice(1).indexOf(":") != -1) {
+          this.options = location.hash.slice(1).split(":")[0];
+        } else {
+          this.options = "";
+        }
+        this.enableFrackinUniverse = (this.options.indexOf("F") != -1);
+        
         this.initToolWindow($('#tools'));
         this.initInfoWindow($('#info'));
         this.selectTool('info');
@@ -425,7 +433,6 @@
         this.updateHash();
       },
       
-      enableFrackinUniverse: true,
       initToolWindow: function(toolsDiv) {
         this.toolWindow = toolsDiv;
         toolsDiv.width(32 * 3);
@@ -991,6 +998,10 @@
       },
       
       loadStationHash: function(hash) {
+        if (hash.indexOf(":") != -1) {
+          hash = hash.split(":")[1]
+        }
+        
         if (/^([0-9A-Za-n][0-9A-Za-r][0CEGHRSVWZabcdeghmnprqsvwx])+$/g.test(hash) == false) {
           console.log("Invalid format (overall)");
           return;
@@ -1017,7 +1028,11 @@
       },
       
       updateHash: function() {
-        document.location.hash = this.getStationHash();
+        var newHash = this.getStationHash()
+        if (this.options.length > 0) {
+          newHash = this.options + ":" + newHash;
+        }
+        document.location.hash = newHash;
       }
     }
     
