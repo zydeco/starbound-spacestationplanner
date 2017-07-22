@@ -311,6 +311,84 @@
           name: 'Core',
           description: 'This is the starting core of your space station.',
           exits: ['n','e','w','s']
+        },
+        
+        {
+          id: 'solar_hall_t1',
+          coding: 'a',
+          name: 'Solar Hall Tier 1',
+          description: 'A hallway with solar arrays on top.<br/>(from Frackin\' Universe)',
+          exits: ['e','w'],
+          cost: {
+            titanium: 40,
+            advanced_plastic: 50,
+            silver: 60,
+            wire: 110,
+            battery_1000u: 1,
+            solar_array: 3
+          }
+        },
+        {
+          id: 'greenhouse',
+          coding: 'g',
+          name: 'Greenhouse',
+          description: 'A greenhouse.<br/>(from Frackin\' Universe)',
+          exits: ['s','e','w'],
+          cost: {
+            titanium: 40,
+            advanced_plastic: 50,
+            silver: 60,
+            wire: 100,
+            glass: 80
+          }
+        },
+        {
+          id: 'large_greenhouse',
+          coding: 'G',
+          name: 'Large Greenhouse',
+          description: 'A large greenhouse.<br/>(from Frackin\' Universe)',
+          grid: [
+            [0,0,'lgh1'],
+            [1,0,'lgh2'],
+            [0,1,'lgh3',['w','s']],
+            [1,1,'lgh4',['e']]
+          ],
+          cost: {
+            titanium: 100,
+            advanced_plastic: 110,
+            silver: 130,
+            wire: 200,
+            glass: 160
+          }
+        },
+        {
+          id: 'residential_shaft',
+          coding: 'r',
+          name: 'Residential Shaft',
+          description: 'A 6 room residential shaft.<br/>(from Frackin\' Universe)',
+          exits: ['n','s'],
+          cost: {
+            titanium: 50,
+            glass: 50,
+            advanced_plastic: 120,
+            wire: 50
+          }
+        },
+        {
+          id: 'large_residential_room',
+          coding: 'R',
+          name: 'Large Residential Room',
+          description: 'A large residential room.<br/>(from Frackin\' Universe)',
+          grid: [
+            [0,0,'lr1',['w']],
+            [1,0,'lr2',['s','e']]
+          ],
+          cost: {
+            titanium: 75,
+            glass: 100,
+            advanced_plastic: 155,
+            wire: 100
+          }
         }
       ],
       
@@ -347,10 +425,10 @@
         this.updateHash();
       },
       
+      enableFrackinUniverse: true,
       initToolWindow: function(toolsDiv) {
         this.toolWindow = toolsDiv;
         toolsDiv.width(32 * 3);
-        toolsDiv.height(28 * 8 + 19);
         toolsDiv.offset({top: this.cellSize/2, left: this.cellSize/2});
         toolsDiv.tinyDraggable({ exclude: '.tool' });
         var tools = [
@@ -362,7 +440,15 @@
           't_nse', 'xjunction', 't_nsw',
           'corner_ne', 't_nwe', 'corner_nw',
           'xcorner_nwse', null, 'xcorner_nesw'
-        ];
+        ]
+        if (this.enableFrackinUniverse) {
+          tools = tools.concat([
+            'residential_shaft', 'solar_hall_t1', 'greenhouse',
+            'large_residential_room', null, 'large_greenhouse'
+          ])
+        }
+        
+        toolsDiv.height(28 * (tools.length / 3) + 19);
         var offset = {top: 18 - 28, left: 1};
         for(var i=0; i < tools.length; i++) {
           var tool = $('<div class="tool">');
@@ -386,7 +472,12 @@
           tool.css('background-image', "url('assets/tool/"+ toolName + ".png')");
           tool.attr('data-tool-name', toolName);
           toolsDiv.append(tool);
-          tool.attr('title', this.getNameForTool(toolName));
+          var toolKey = this.keyForTool(toolName);
+          if (toolKey) {
+            tool.attr('title', this.getNameForTool(toolName) + ' (' + toolKey.toUpperCase() + ')');
+          } else {
+            tool.attr('title', this.getNameForTool(toolName));
+          }
           tool.click(toolName, function(event) {
             this.selectTool(event.data);
           }.bind(this));
@@ -397,6 +488,29 @@
           var newHeight = (currentHeight == 16) ? 28 * 8 + 19 : 16;
           this.toolWindow.animate({height: newHeight});
         }.bind(this));
+      },
+      
+      keyToToolMap: {
+        '1': 'info', '2': 'craft', '3': 'manipulator',
+        'q': 'core', 'w': 'shaft', 'e': 'lshaft',
+        'a': 'lcore', 's': 'corridor', 'd': 'lcorridor',
+        'z': 'wbay', 'x': 'mech', 'c': 'ebay',
+        'u': 'corner_se', 'i': 't_swe', 'o': 'corner_sw',
+        'j': 't_nse', 'k': 'xjunction', 'l': 't_nsw',
+        'm': 'corner_ne', ',': 't_nwe', '.': 'corner_nw',
+        'v': 'xcorner_nwse', 'n': 'xcorner_nesw',
+        'r': 'residential_shaft', 't': 'solar_hall_t1', 'y': 'greenhouse',
+        'f': 'large_residential_room', 'h': 'large_greenhouse'
+      },
+      
+      keyForTool: function(tool) {
+        for(var key in this.keyToToolMap) {
+          if (!this.keyToToolMap.hasOwnProperty(key)) continue;
+          if (this.keyToToolMap[key] == tool) {
+            return key;
+          }
+        }
+        return null;
       },
       
       selectTool: function(tool) {
@@ -843,7 +957,10 @@
           glass: 'Glass',
           wire: 'Copper Wire',
           proton_limiter: 'Salvaged Proton Limiter',
-          interface_chip: 'Salvaged Interface Chip'
+          interface_chip: 'Salvaged Interface Chip',
+          advanced_plastic: 'Advanced Plastic',
+          battery_1000u: '1000u 4v Battery Unit',
+          solar_array: 'Solar Array'
         }
         for(var key in costNames) {
           if (!costNames.hasOwnProperty(key)) continue;
@@ -874,7 +991,7 @@
       },
       
       loadStationHash: function(hash) {
-        if (/^([0-9A-Za-n][0-9A-Za-r][0CEHSVWZbcdehmnpqsvwx])+$/g.test(hash) == false) {
+        if (/^([0-9A-Za-n][0-9A-Za-r][0CEGHRSVWZabcdeghmnprqsvwx])+$/g.test(hash) == false) {
           console.log("Invalid format (overall)");
           return;
         }
@@ -920,16 +1037,7 @@
       
       // keys
       $(document).on('keypress', function(e) {
-        var keyToTool = {
-          '1': 'info', '2': 'craft', '3': 'manipulator',
-          'q': 'core', 'w': 'shaft', 'e': 'lshaft',
-          'a': 'lcore', 's': 'corridor', 'd': 'lcorridor',
-          'z': 'wbay', 'x': 'mech', 'c': 'ebay',
-          'u': 'corner_se', 'i': 't_swe', 'o': 'corner_sw',
-          'j': 't_nse', 'k': 'xjunction', 'l': 't_nsw',
-          'm': 'corner_ne', ',': 't_nwe', '.': 'corner_nw',
-          'v': 'xcorner_nwse', 'n': 'xcorner_nesw'
-        }
+        var keyToTool = SpaceStation.keyToToolMap;
         var key = String.fromCharCode(e.which);
         if (keyToTool.hasOwnProperty(key)) {
           SpaceStation.selectTool(keyToTool[key]);
@@ -1061,6 +1169,9 @@
     ul.cost > li.glass:before { background-image: url('assets/icon/glass.png'); }
     ul.cost > li.proton_limiter:before { background-image: url('assets/icon/proton_limiter.png'); }
     ul.cost > li.interface_chip:before { background-image: url('assets/icon/interface_chip.png'); }
+    ul.cost > li.advanced_plastic:before { background-image: url('assets/icon/advanced_plastic.png'); }
+    ul.cost > li.solar_array:before { background-image: url('assets/icon/solar_array.png'); }
+    ul.cost > li.battery_1000u:before { background-image: url('assets/icon/battery_1000u.png'); }
     
     #footnote {
       color: #ddd;
